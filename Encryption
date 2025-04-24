@@ -1,0 +1,70 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+// Hàm xử lý ký tự, dùng bool để xác định mã hóa hay giải mã
+char shift_char(char c, int s, bool encrypt_mode) {
+    int dir = encrypt_mode ? 1 : -1;
+
+    if (isupper(c))
+        return char((c - 'A' + dir * s + 26) % 26 + 'A');
+    if (islower(c))
+        return char((c - 'a' + dir * s + 26) % 26 + 'a');
+    return c;
+}
+
+// Hàm xử lý văn bản (dùng chung cho mã hóa và giải mã)
+string process(const string& text, int s, bool encrypt_mode) {
+    string result;
+    for (char c : text)
+        result += shift_char(c, s, encrypt_mode);
+    return result;
+}
+
+int main()
+{
+    string text;
+    int s;
+
+    // Đọc dữ liệu từ input.txt
+    ifstream infile("input.txt");
+    if (!infile) {
+        cerr << "Không thể mở file input.txt\n";
+        return 1;
+    }
+
+    string line;
+    while (getline(infile, line))
+        text += line + "\n";
+    infile.close();
+
+    // Nhập khóa từ bàn phím
+    cout << "Nhập khóa mã hóa (0-25): ";
+    cin >> s;
+
+    // Mã hóa văn bản
+    string encrypted = process(text, s, true);
+
+    ofstream encfile("data.enc");
+    if (!encfile) {
+        cerr << "Không thể tạo file data.enc\n";
+        return 1;
+    }
+    encfile << encrypted;
+    encfile.close();
+
+    // Giải mã văn bản
+    string decrypted = process(encrypted, s, false);
+
+    ofstream outfile("output.txt");
+    if (!outfile) {
+        cerr << "Không thể tạo file output.txt\n";
+        return 1;
+    }
+    outfile << decrypted;
+    outfile.close();
+
+    cout << "Đã mã hóa và giải mã thành công.\n";
+
+    return 0;
+}
